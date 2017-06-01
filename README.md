@@ -7,7 +7,7 @@ https://www.nuget.org/packages/NuPack
 When NuPack is reference by a project, no dependency is created, there is only a new build step to automatically pack the project output into a nuget package with project name as id.
 
 ## Nuspec : the manual way
-When a .nuspec file is detected as part of project, NuPack respect the specification and dosen't apply any auto configuration.
+When a .nuspec file is detected as part of project, NuPack respect the specification and dosen't apply any auto configuration to produce the expected nuget package.
 
 ## Library : the most common scenario 
 Produce a simple library (lib folder) with nuget package dependencies. This pattern is automatically apply when there is no .nuspec file detected for project of type library.
