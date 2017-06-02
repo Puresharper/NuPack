@@ -108,7 +108,7 @@ namespace NuCreate
                 {
                     var _targets = string.Concat(assembly.Substring(0, assembly.Length - 4), ".targets");
                     using (var _stream = typeof(Program).Assembly.GetManifestResourceStream("NuPack.Template")) { File.WriteAllText(_targets, new StreamReader(_stream).ReadToEnd().Replace("[name]", _name).Replace("[version]", _version), Encoding.UTF8); }
-                    _manifest.PopulateFiles(null, Directory.EnumerateFiles(_directory).Where(_Filename => !_Filename.EndsWith(".vshost..exe", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".pdb", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".pdb", StringComparison.CurrentCultureIgnoreCase)).Select(_Filename => new ManifestFile() { Source = _Filename, Target = $"build" }));
+                    _manifest.PopulateFiles(null, Directory.EnumerateFiles(_directory).Where(_Filename => !_Filename.EndsWith(".vshost.exe", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".pdb", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".pdb", StringComparison.CurrentCultureIgnoreCase)).Select(_Filename => new ManifestFile() { Source = _Filename, Target = $"build" }));
                     using (var _stream = File.Open(_package, FileMode.Create)) { _manifest.Save(_stream); }
                     Program.Try(() => { if (File.Exists(_targets)) { File.Delete(_targets); } });
                 }
