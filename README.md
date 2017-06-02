@@ -6,11 +6,19 @@ https://www.nuget.org/packages/NuPack
 
 When NuPack is reference by a project, no dependency is created, there is only a new build step to automatically pack the project output into a nuget package with project name as id.
 
-## Nuspec : the manual way
+## Features
+- **Nuspec : the manual way**
+
 When a .nuspec file is detected as part of project, NuPack respect the specification and dosen't apply any auto configuration to produce the expected nuget package.
 
-## Library : the most common scenario 
+- **Library : the most common scenario**
+
 Produce a simple library (lib folder) with nuget package dependencies. This pattern is automatically apply when there is no .nuspec file detected for project of type library.
 
-## Console : the build action
+- **Console : the build action**
+
 When package is based on console application and .nuspect is not declared, a build directory is defined with a .targets file to provide a simple way to add a build action step as post build with project file (csproj) as first argument and configuration (Debug/Release) as second.
+
+## More
+[How to create a nuget package using NuPack](https://www.codeproject.com/Tips/1190135/How-to-create-a-nuget-package-on-each-Visual-Studi)
+
