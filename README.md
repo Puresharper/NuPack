@@ -1,8 +1,8 @@
+[![NuGet](https://img.shields.io/nuget/v/nupack.svg)](https://www.nuget.org/packages/NuPack)
+
 # NuPack
 
 NuPack is an easy way to produce a nuget package for .NET 4.0+ based on AssemblyInfo or nuspec when building with Visual Studio. It is materialized as a nuget package.
-
-https://www.nuget.org/packages/NuPack
 
 When NuPack is reference by a project, no dependency is created, there is only a new build step to automatically pack the project output into a nuget package with project name as id.
 
