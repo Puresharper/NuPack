@@ -19,9 +19,9 @@ Produce a simple library (lib folder) with nuget package dependencies. This patt
 
 When package is based on console application and .nuspec is not declared, a build directory is defined with a .targets file to provide a simple way to add a build action step as post build with project file (csproj) as first argument and configuration (Debug/Release) as second.
 
-- **Automatically include project dependency**
+- **Automatically include dependencies**
 
-Dependency like project reference must be include recursively in library nuget package as nuget dependency is it produce a nuget package (project with NuPack inclusion) and must be include recursively as simple library (dll) if it is not a nuget producer.
+Dependencies can be a nuget packages, project references, etc... They must be include recursively in the generated nuget package with an adequat form.
 
 - **Propagation of resources**
 
