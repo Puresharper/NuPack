@@ -23,9 +23,9 @@ When package is based on console application and .nuspec is not declared, a buil
 
 Dependency like project reference must be include recursively in library nuget package as nuget dependency is it produce a nuget package (project with NuPack inclusion) and must be include recursively as simple library (dll) if it is not a nuget producer.
 
-- **Propagation of xml documentation**
+- **Propagation of resources**
 
-Nuget process does not propagate xml documentation of dependency in output and cannot be considered in NuPack packaging process. Allow NuPack to propagate automatically xml documentation can help to keep coding documentation available in each project node.
+Nuget process does not propagate xml documentation and resources of dependency in output and cannot be considered in NuPack packaging process. Allow NuPack to propagate them automatically help to keep a clean structure and documentation in each node.
 
 ## Roadmap
 - **Automatically detect relation between project and github.com to complete metadata**
