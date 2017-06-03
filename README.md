@@ -19,7 +19,6 @@ Produce a simple library (lib folder) with nuget package dependencies. This patt
 
 When package is based on console application and .nuspec is not declared, a build directory is defined with a .targets file to provide a simple way to add a build action step as post build with project file (csproj) as first argument and configuration (Debug/Release) as second.
 
-## Roadmap
 - **Automatically include project dependency**
 
 Dependency like project reference must be include recursively in library nuget package as nuget dependency is it produce a nuget package (project with NuPack inclusion) and must be include recursively as simple library (dll) if it is not a nuget producer.
@@ -28,6 +27,7 @@ Dependency like project reference must be include recursively in library nuget p
 
 Nuget process does not propagate xml documentation of dependency in output and cannot be considered in NuPack packaging process. Allow NuPack to propagate automatically xml documentation can help to keep coding documentation available in each project node.
 
+## Roadmap
 - **Automatically detect relation between project and github.com to complete metadata**
 
 One of frustrating thing with nuget is to have a clean and full metadata. Unfortunately, AssemblyInfo does not provide a way to expose all nuget needs. In other hand, it is often necessary to declare in multiple place the same informations that cause synchronization issue and add  a maintenance overhead. Using github.com api to automatically complete nuget creation can be a good thing to stay reactive.
