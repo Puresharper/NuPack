@@ -7,6 +7,6 @@
         </BuildDependsOn>
     </PropertyGroup>
     <Target Name="[name]">
-        <Exec Command="&quot;$(SolutionDir)packages\[name].[version]\build\[name].exe&quot; &quot;$(SolutionDir)\&quot; &quot;$(ProjectPath)&quot; &quot;$(Configuration)&quot;" /> 
+        <Exec Command="&quot;$(SolutionDir)packages\[name].[version]\build\[name].exe&quot; &quot;$(SolutionPath)&quot; &quot;$(ProjectPath)&quot; &quot;$(Configuration)&quot; &quot;$(PlatformName)&quot; &quot;$(TargetPath)&quot;" /> 
     </Target>
 </Project>
