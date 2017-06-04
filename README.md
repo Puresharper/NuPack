@@ -17,7 +17,7 @@ Produce a simple library (lib folder) with nuget package dependencies. This patt
 
 - **Console : the build action**
 
-When package is based on console application and .nuspec is not declared, a build directory is defined with a .targets file to provide a simple way to add a build action step as post build with project file (csproj) as first argument and configuration (Debug/Release) as second.
+When package is based on console application and .nuspec is not declared, a build directory is defined with a .targets file to provide a simple way to add a build action step as post build with 5 arguments : $(SolutionPath), $(ProjectPath), $(Configuration), $(PlatformName) and $(TargetPath)
 
 - **Automatically include dependencies**
 
