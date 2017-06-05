@@ -30,11 +30,11 @@ Nuget process does not propagate xml documentation and resources of dependency i
 ## Roadmap
 - **Extensibility pattern with custom nuget package** : [coming soon](https://github.com/Virtuoze/NuPack/tree/master/NuPack/NuPack.Extension)
 
-NuPack can provide a library to develop a plugin as nuget package. It will detect plugin from package.config and load it to add additional behavior to NuPack. Plugin will be called with arguments passed to NuPack and produce a PackageBuilder from original PackageBuilder before save result.
+NuPack can provide a library to develop a plugin as nuget package. It will detect plugin from package.config and load it from build folder to add additional behavior to NuPack. Plugin will be called with arguments passed to NuPack and produce a PackageBuilder from original PackageBuilder before save result.
 
 - **Detection of NuPack Extension project to handle it**
 
-NuPack have to create a specific package to store plugin (library) in content folder when project referencing NuPack reference NuPack.Extension too.
+NuPack have to create a specific package to store plugin (library) in build folder when project referencing NuPack reference NuPack.Extension too.
 
 - **Optimizer pattern for console application**
 
