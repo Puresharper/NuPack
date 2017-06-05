@@ -28,7 +28,7 @@ Dependencies can be a nuget packages, project references, etc... They must be in
 Nuget process does not propagate xml documentation and resources of dependency in output and cannot be considered in NuPack packaging process. Allow NuPack to propagate them automatically help to keep a clean structure and documentation in each node.
 
 ## Roadmap
-- **Extensibility pattern with custom nuget package**
+- **Extensibility pattern with custom nuget package** : [coming soon](https://github.com/Virtuoze/NuPack/tree/master/NuPack/NuPack.Extension)
 
 NuPack can provide a library to develop a plugin as nuget package. It will detect plugin from package.config and load it to add additional behavior to NuPack. Plugin will be called with arguments passed to NuPack and produce a PackageBuilder from original PackageBuilder before save result.
 
