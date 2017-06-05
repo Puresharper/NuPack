@@ -130,7 +130,7 @@ namespace NuCreate
                 var _metadata = new ManifestMetadata()
                 {
                     Id = _name,
-                    Title = _assembly.Metadata<AssemblyProductAttribute>() ?? "-",
+                    Title = _assembly.Metadata<AssemblyProductAttribute>() ?? _name,
                     Authors = _assembly.Metadata<AssemblyCompanyAttribute>() ?? "-",
                     Version = _version,
                     Summary = _assembly.Metadata<AssemblyDescriptionAttribute>() ?? (_assembly.Metadata<AssemblyProductAttribute>() ?? "-"),

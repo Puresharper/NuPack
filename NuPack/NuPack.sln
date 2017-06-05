@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuPack", "NuPack\NuPack.csp
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Images", "Images", "{C6BAED0B-2BF8-4C90-AB83-B6D11B2E0C96}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuPack.Extension", "NuPack.Extension\NuPack.Extension.csproj", "{82D134C5-7C13-4845-B754-ADB522E838AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,6 +19,10 @@ Global
 		{85C23E55-EC01-4202-8BF6-4C708374359B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{85C23E55-EC01-4202-8BF6-4C708374359B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{85C23E55-EC01-4202-8BF6-4C708374359B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82D134C5-7C13-4845-B754-ADB522E838AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82D134C5-7C13-4845-B754-ADB522E838AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82D134C5-7C13-4845-B754-ADB522E838AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82D134C5-7C13-4845-B754-ADB522E838AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

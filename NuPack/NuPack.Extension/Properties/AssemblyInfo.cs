@@ -3,17 +3,17 @@ using System.Reflection;
 using System.Runtime;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("NuPack .NET 4.0+")]
-[assembly: AssemblyDescription("NuPack .NET 4.0+ create a nuget package on build")]
+[assembly: AssemblyTitle("NuPack Extension .NET 4.0+")]
+[assembly: AssemblyDescription("NuPack Extension .NET 4.0+ provides interface to develop plugin for NuPack")]
 [assembly: AssemblyCompany("Tony THONG")]
-[assembly: AssemblyProduct("NuPack")]
+[assembly: AssemblyProduct("NuPack.Extension")]
 [assembly: AssemblyCopyright("Copyright ©  2017 Tony THONG")]
 [assembly: AssemblyTrademark("NuPack")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
-[assembly: Guid("85c23e55-ec01-4202-8bf6-4c708374359b")]
-[assembly: AssemblyVersion("2.0.0")]
-[assembly: AssemblyFileVersion("2.0.0")]
+[assembly: Guid("82d134c5-7c13-4845-b754-adb522e838ab")]
+[assembly: AssemblyVersion("1.0.0")]
+[assembly: AssemblyFileVersion("1.0.0")]
 #if DEBUG
  [assembly: AssemblyConfiguration("Debug")]
 #else
