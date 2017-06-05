@@ -28,6 +28,16 @@ Dependencies can be a nuget packages, project references, etc... They must be in
 Nuget process does not propagate xml documentation and resources of dependency in output and cannot be considered in NuPack packaging process. Allow NuPack to propagate them automatically help to keep a clean structure and documentation in each node.
 
 ## Roadmap
+- **Extensibility pattern with custom nuget package**
+
+NuPack can provide a library to develop a plugin as nuget package. It will detect plugin from package.config and load it to add additional behavior to NuPack.
+
+- **NuPack behvior improved with environment variables**
+
+NuPack have a unique behavior with some creation pattern. It will be good if it can do something more or different by detecting variable environment :
+    - Local repository to copy .nupkg
+    - NuPack .ignore pattern
+
 - **Optimizer pattern for console application**
 
 When NuPack is referenced by a console application named [Library].Optimizer and reference a library named [Library], an optimizer pattern is done. Generated nuget package contains the [Library].dll into lib folder and [Library].Optimizer.exe is placed into build folder with a .targets file to execute optimizer on postbuild with same arguments than standard build action for console application pattern. The nuget package will take [Library] name as id. It means that pattern is not done if [Library] is a nuget producer. Optimizer pattern will be an entry point to rewrite IL for example or prepare something based on [Library].dll usage.
