@@ -97,7 +97,7 @@ namespace NuCreate
                 var _directory = string.Concat(setting.Solution, @"packages\", _dependency.Id, ".", _dependency.Version, @"\build");
                 if (Directory.Exists(_directory))
                 {
-                    foreach (var _library in Directory.EnumerateFiles(_directory, "*.dll", SearchOption.AllDirectories))
+                    foreach (var _library in Directory.EnumerateFiles(_directory, "*.dll"))
                     {
                         try
                         {
@@ -165,42 +165,54 @@ namespace NuCreate
                 }
                 else
                 {
-                    var _dictionary = _dependencies.Select(_Dependency => string.Concat(solution, @"packages\", _Dependency.Id, ".", _Dependency.Version, @"\lib")).Where(_Library => Directory.Exists(_Library)).SelectMany(_Library => Directory.EnumerateFiles(_Library, "*", SearchOption.AllDirectories)).ToArray();
-                    foreach (var _dependency in _dependencies.GroupBy(_Package => _Package.TargetFramework)) { _builder.DependencySets.Add(new PackageDependencySet(_dependency.Key, _dependency.Select(_Package => new PackageDependency(_Package.Id, _Package.VersionConstraint, null, null)))); }
-                    var _targets = string.Concat(assembly.Substring(0, assembly.Length - 4), ".targets");
-                    if (_dictionary.Any(_Resource => !_Resource.EndsWith(".dll", StringComparison.CurrentCultureIgnoreCase)))
+                    if (_dependencies.Any(_Dependency => _Dependency.Id == "NuPack.Extension"))
                     {
-                        using (var _stream = typeof(Program).Assembly.GetManifestResourceStream("NuPack.Template"))
+                        _builder.PopulateFiles(null, Directory.EnumerateFiles(_directory).Where(_Filename => !_Filename.EndsWith(".nupkg", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".vshost.exe", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".vshost.exe.manifest", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".pdb", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".tmp", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".bak", StringComparison.CurrentCultureIgnoreCase)).Select(_Filename => new ManifestFile() { Source = _Filename, Target = $"build" }));
+                        var _package = Program.Extends(_dependencies, _setting, new Package(_directory, _builder));
+                        var _filename = $@"{ _package.Directory }\{ _name }.{ _package.Builder.Version.ToNormalizedString() }.nupkg";
+                        Program.Try(() => { if (File.Exists(_filename)) { File.Delete(_filename); } });
+                        using (var _stream = File.Open(_filename, FileMode.Create)) { _package.Builder.Save(_stream); }
+                        Console.WriteLine($"{ _name } -> { _filename }");
+                    }
+                    else
+                    {
+                        var _dictionary = _dependencies.Select(_Dependency => string.Concat(solution, @"packages\", _Dependency.Id, ".", _Dependency.Version, @"\lib")).Where(_Library => Directory.Exists(_Library)).SelectMany(_Library => Directory.EnumerateFiles(_Library, "*", SearchOption.AllDirectories)).ToArray();
+                        foreach (var _dependency in _dependencies.GroupBy(_Package => _Package.TargetFramework)) { _builder.DependencySets.Add(new PackageDependencySet(_dependency.Key, _dependency.Select(_Package => new PackageDependency(_Package.Id, _Package.VersionConstraint, null, null)))); }
+                        var _targets = string.Concat(assembly.Substring(0, assembly.Length - 4), ".targets");
+                        if (_dictionary.Any(_Resource => !_Resource.EndsWith(".dll", StringComparison.CurrentCultureIgnoreCase)))
                         {
-                            var _document = XDocument.Parse(new StreamReader(_stream).ReadToEnd().Replace("[name]", _name), LoadOptions.PreserveWhitespace);
-                            var _namespace = _document.Root.Name.Namespace;
-                            var _sequence = _document.Descendants(_namespace.GetName("Target")).Single();
-                            _sequence.RemoveNodes();
-                            foreach (var _dependency in _dependencies)
+                            using (var _stream = typeof(Program).Assembly.GetManifestResourceStream("NuPack.Template"))
                             {
-                                var _library = string.Concat(solution, @"packages\", _dependency.Id, ".", _dependency.Version.ToNormalizedString(), @"\lib");
-                                if (Directory.Exists(_library))
+                                var _document = XDocument.Parse(new StreamReader(_stream).ReadToEnd().Replace("[name]", _name), LoadOptions.PreserveWhitespace);
+                                var _namespace = _document.Root.Name.Namespace;
+                                var _sequence = _document.Descendants(_namespace.GetName("Target")).Single();
+                                _sequence.RemoveNodes();
+                                foreach (var _dependency in _dependencies)
                                 {
-                                    foreach (var _resource in Directory.EnumerateFiles(_library).Select(_Filename => Path.GetFileName(_Filename)))
+                                    var _library = string.Concat(solution, @"packages\", _dependency.Id, ".", _dependency.Version.ToNormalizedString(), @"\lib");
+                                    if (Directory.Exists(_library))
                                     {
-                                        if (_resource.EndsWith(".dll", StringComparison.CurrentCultureIgnoreCase)) { continue; }
-                                        _sequence.Add(new XElement(_namespace.GetName("Exec"), new XAttribute("Command", $"xcopy /f /q /y \"$(SolutionDir)packages\\{ _dependency.Id }.{ _dependency.Version }\\lib\\{ _resource }\" \"$(ProjectDir)$(OutDir)*\" > nul")));
+                                        foreach (var _resource in Directory.EnumerateFiles(_library).Select(_Filename => Path.GetFileName(_Filename)))
+                                        {
+                                            if (_resource.EndsWith(".dll", StringComparison.CurrentCultureIgnoreCase)) { continue; }
+                                            _sequence.Add(new XElement(_namespace.GetName("Exec"), new XAttribute("Command", $"xcopy /f /q /y \"$(SolutionDir)packages\\{ _dependency.Id }.{ _dependency.Version }\\lib\\{ _resource }\" \"$(ProjectDir)$(OutDir)*\" > nul")));
+                                        }
                                     }
                                 }
+                                File.WriteAllText(_targets, _document.ToString(), Encoding.UTF8);
+                                _builder.PopulateFiles(null, new ManifestFile[] { new ManifestFile() { Source = _targets, Target = $"build" } });
                             }
-                            File.WriteAllText(_targets, _document.ToString(), Encoding.UTF8);
-                            _builder.PopulateFiles(null, new ManifestFile[] { new ManifestFile() { Source = _targets, Target = $"build" } });
                         }
+                        var _framework = $"lib/net{ _assembly.MainModule.RuntimeVersion[1] }{ _assembly.MainModule.RuntimeVersion[3] }/";
+                        var _resources = _dictionary.Select(_Resource => Path.GetFileName(_Resource)).Concat(Program.Resources(project, configuration)).Select(_Resource => _Resource.ToLower()).Distinct().ToArray();
+                        _builder.PopulateFiles(null, Directory.EnumerateFiles(_directory).Where(_Resource => !string.Equals(_Resource, _targets, StringComparison.CurrentCultureIgnoreCase) && !_Resource.EndsWith(".pdb", StringComparison.CurrentCultureIgnoreCase) && !_Resource.EndsWith(".tmp", StringComparison.CurrentCultureIgnoreCase) && !_Resource.EndsWith(".bak", StringComparison.CurrentCultureIgnoreCase) && !_resources.Contains(Path.GetFileName(_Resource).ToLower())).Select(_Resource => new ManifestFile() { Source = _Resource, Target = _framework }));
+                        var _package = Program.Extends(_dependencies, _setting, new Package(_directory, _builder));
+                        var _filename = $@"{ _package.Directory }\{ _name }.{ _package.Builder.Version }.nupkg";
+                        Program.Try(() => { if (File.Exists(_filename)) { File.Delete(_filename); } });
+                        using (var _stream = File.Open(_filename, FileMode.Create)) { _package.Builder.Save(_stream); }
+                        Program.Try(() => { if (File.Exists(_targets)) { File.Delete(_targets); } });
+                        Console.WriteLine($"{ _name } -> { _filename }");
                     }
-                    var _framework = $"lib/net{ _assembly.MainModule.RuntimeVersion[1] }{ _assembly.MainModule.RuntimeVersion[3] }/";
-                    var _resources = _dictionary.Select(_Resource => Path.GetFileName(_Resource)).Concat(Program.Resources(project, configuration)).Select(_Resource => _Resource.ToLower()).Distinct().ToArray();
-                    _builder.PopulateFiles(null, Directory.EnumerateFiles(_directory).Where(_Resource => !string.Equals(_Resource, _targets, StringComparison.CurrentCultureIgnoreCase) && !_Resource.EndsWith(".pdb", StringComparison.CurrentCultureIgnoreCase) && !_Resource.EndsWith(".tmp", StringComparison.CurrentCultureIgnoreCase) && !_Resource.EndsWith(".bak", StringComparison.CurrentCultureIgnoreCase) && !_resources.Contains(Path.GetFileName(_Resource).ToLower())).Select(_Resource => new ManifestFile() { Source = _Resource, Target = _framework }));
-                    var _package = Program.Extends(_dependencies, _setting, new Package(_directory, _builder));
-                    var _filename = $@"{ _package.Directory }\{ _name }.{ _package.Builder.Version }.nupkg";
-                    Program.Try(() => { if (File.Exists(_filename)) { File.Delete(_filename); } });
-                    using (var _stream = File.Open(_filename, FileMode.Create)) { _package.Builder.Save(_stream); }
-                    Program.Try(() => { if (File.Exists(_targets)) { File.Delete(_targets); } });
-                    Console.WriteLine($"{ _name } -> { _filename }");
                 }
             }
             else
