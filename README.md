@@ -32,6 +32,10 @@ Nuget process does not propagate xml documentation and resources of dependency i
 
 NuPack can provide a library to develop a plugin as nuget package. It will detect plugin from package.config and load it to add additional behavior to NuPack. Plugin will be called with arguments passed to NuPack and produce a PackageBuilder from original PackageBuilder before save result.
 
+- **Detection of NuPack Extension project to handle it**
+
+NuPack have to create a specific package to store plugin (library) in content folder when project referencing NuPack reference NuPack.Extension too.
+
 - **Optimizer pattern for console application**
 
 When NuPack is referenced by a console application named [Library].Optimizer and reference a library named [Library], an optimizer pattern is done. Generated nuget package contains the [Library].dll into lib folder and [Library].Optimizer.exe is placed into build folder with a .targets file to execute optimizer on postbuild with same arguments than standard build action for console application pattern. The nuget package will take [Library] name as id. It means that pattern is not done if [Library] is a nuget producer. Optimizer pattern will be an entry point to rewrite IL for example or prepare something based on [Library].dll usage.
