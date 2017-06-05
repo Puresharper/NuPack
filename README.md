@@ -30,13 +30,7 @@ Nuget process does not propagate xml documentation and resources of dependency i
 ## Roadmap
 - **Extensibility pattern with custom nuget package**
 
-NuPack can provide a library to develop a plugin as nuget package. It will detect plugin from package.config and load it to add additional behavior to NuPack.
-
-- **NuPack behvior improved with environment variables**
-
-NuPack have a unique behavior with some creation pattern. It will be good if it can do something more or different by detecting variable environment :
-    - Local repository to copy .nupkg
-    - NuPack .ignore pattern
+NuPack can provide a library to develop a plugin as nuget package. It will detect plugin from package.config and load it to add additional behavior to NuPack. Plugin will be called with arguments passed to NuPack and produce a PackageBuilder from original PackageBuilder before save result.
 
 - **Optimizer pattern for console application**
 
