@@ -42,5 +42,6 @@ One of frustrating thing with nuget is to have a clean and full metadata. Unfort
 
 
 ## More
-[How to create a nuget package using NuPack](https://www.codeproject.com/Tips/1190135/How-to-create-a-nuget-package-on-each-Visual-Studi)
-
+- [How to create a nuget package using NuPack](https://www.codeproject.com/Tips/1190135/How-to-create-a-nuget-package-on-each-Visual-Studi)
+- [How to setup a managed postbuild with NuPack](https://www.codeproject.com/Tips/1190360/How-to-setup-a-managed-postbuild-without-scripting)
+- [Swagger4WCF use NuPack postbuild pattern](https://www.codeproject.com/Tips/1190441/How-to-generate-basic-swagger-yaml-description-for)
