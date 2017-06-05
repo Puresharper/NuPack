@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("Create a nuget package on build for .NET 4.0+")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Tony THONG")]
-[assembly: AssemblyProduct("NuPack")]
+[assembly: AssemblyProduct("NuPack .NET 4.0+")]
 [assembly: AssemblyCopyright("Copyright ©  2017 Tony THONG")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
