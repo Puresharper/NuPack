@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -8,8 +10,6 @@ using System.Text;
 using System.Threading;
 using Mono.Cecil;
 using NuGet;
-using System.Runtime.Versioning;
-using System.Collections.Generic;
 
 namespace NuCreate
 {
