@@ -28,6 +28,10 @@ Dependencies can be a nuget packages, project references, etc... They must be in
 Nuget process does not propagate xml documentation and resources of dependency in output and cannot be considered in NuPack packaging process. Allow NuPack to propagate them automatically help to keep a clean structure and documentation in each node.
 
 ## Roadmap
+- **Optimizer pattern for console application**
+
+When NuPack is referenced by a console application named [Library].Optimizer and reference a library named [Library], an optimizer pattern is done. Generated nuget package contains the [Library].dll into lib folder and [Library].Optimizer.exe is placed into build folder with a .targets file to execute optimizer on postbuild with same arguments than standard build action for console application pattern. The nuget package will take [Library] name as id. It means that pattern is not done if [Library] is a nuget producer. Optimizer pattern will be an entry point to rewrite IL for example or prepare something based on [Library].dll usage.
+
 - **Automatically detect relation between project and github.com to complete metadata**
 
 One of frustrating thing with nuget is to have a clean and full metadata. Unfortunately, AssemblyInfo does not provide a way to expose all nuget needs. In other hand, it is often necessary to declare in multiple place the same informations that cause synchronization issue and add  a maintenance overhead. Using github.com api to automatically complete nuget creation can be a good thing to stay reactive.
