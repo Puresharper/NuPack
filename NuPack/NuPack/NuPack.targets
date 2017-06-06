@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <BuildDependsOn>
+      $(BuildDependsOn);
+      NuPack
+    </BuildDependsOn>
+  </PropertyGroup>
+  <Target Name="NuPack">
+    <Exec Command="&quot;$(SolutionDir)packages\NuPack.3.4.1\build\NuPack.exe&quot; &quot;$(SolutionPath)&quot; &quot;$(ProjectPath)&quot; &quot;$(Configuration)&quot; &quot;$(PlatformName)&quot; &quot;$(TargetPath)&quot;" />
+  </Target>
+</Project>

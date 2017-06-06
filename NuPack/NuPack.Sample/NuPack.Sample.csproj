@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{818F3B3A-C17D-41B1-8D2B-DA372694E6AD}</ProjectGuid>
+    <ProjectGuid>{1B2AD92F-8D17-4EFC-A862-576065D2A4CB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>NuPack.Extension.Sample</RootNamespace>
-    <AssemblyName>NuPack.Extension.Sample</AssemblyName>
+    <RootNamespace>NuPack.Sample</RootNamespace>
+    <AssemblyName>NuPack.Sample</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,20 +31,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Web.XmlTransform, Version=2.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Web.Xdt.2.1.1\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuGet.Core, Version=2.14.0.832, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\NuGet.Core.2.14.0\lib\net40-Client\NuGet.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="NuPack.Extension, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NuPack.Extension.1.0.0\lib\net40\NuPack.Extension.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -53,7 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Plugin.cs" />
+    <Compile Include="Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -66,7 +56,9 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\NuPack.3.4.1\build\NuPack.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NuPack.3.4.1\build\NuPack.targets'))" />
+    <Error Condition="!Exists('..\packages\NuPack.Extension.Sample.1.0.0.0\build\NuPack.Extension.Sample.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NuPack.Extension.Sample.1.0.0.0\build\NuPack.Extension.Sample.targets'))" />
   </Target>
+  <Import Project="..\packages\NuPack.Extension.Sample.1.0.0.0\build\NuPack.Extension.Sample.targets" Condition="Exists('..\packages\NuPack.Extension.Sample.1.0.0.0\build\NuPack.Extension.Sample.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
