@@ -94,47 +94,39 @@ namespace NuCreate
             }
         }
 
-        static private PackageBuilder Extends(IEnumerable<PackageReference> dependencies, Setting setting, PackageBuilder package)
+        static private IEnumerable<IPlugin> Extends(IEnumerable<PackageReference> dependencies, Setting setting, ref PackageBuilder package)
         {
             var _plugins = new List<IPlugin>();
-            try
+            var _solution = Path.GetDirectoryName(setting.Solution);
+            foreach (var _dependency in dependencies)
             {
-                var _solution = Path.GetDirectoryName(setting.Solution);
-                foreach (var _dependency in dependencies)
+                var _directory = string.Concat(_solution, @"\packages\", _dependency.Id, ".", _dependency.Version, @"\NuPack");
+                if (Directory.Exists(_directory))
                 {
-                    var _directory = string.Concat(_solution, @"\packages\", _dependency.Id, ".", _dependency.Version, @"\NuPack");
-                    if (Directory.Exists(_directory))
+                    foreach (var _library in Directory.EnumerateFiles(_directory, "*.dll"))
                     {
-                        foreach (var _library in Directory.EnumerateFiles(_directory, "*.dll"))
+                        try
                         {
-                            try
+                            var _assembly = Assembly.LoadFrom(_library);
+                            var _identity = BitConverter.ToString(_assembly.GetName().GetPublicKeyToken()).Replace("-", string.Empty);
+                            if (string.Equals(_identity, Program.m_Native, StringComparison.InvariantCultureIgnoreCase)) { continue; }
+                            foreach (var _type in _assembly.GetTypes())
                             {
-                                var _assembly = Assembly.LoadFrom(_library);
-                                var _identity = BitConverter.ToString(_assembly.GetName().GetPublicKeyToken()).Replace("-", string.Empty);
-                                if (string.Equals(_identity, Program.m_Native, StringComparison.InvariantCultureIgnoreCase)) { continue; }
-                                foreach (var _type in _assembly.GetTypes())
+                                if (!_type.IsAbstract && typeof(IPlugin).IsAssignableFrom(_type))
                                 {
-                                    if (!_type.IsAbstract && typeof(IPlugin).IsAssignableFrom(_type))
-                                    {
-                                        var _constructor = _type.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, null, Type.EmptyTypes, null);
-                                        if (_constructor == null) { continue; }
-                                        _plugins.Add(Activator.CreateInstance(_type, true) as IPlugin);
-                                    }
+                                    var _constructor = _type.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, null, Type.EmptyTypes, null);
+                                    if (_constructor == null) { continue; }
+                                    _plugins.Add(Activator.CreateInstance(_type, true) as IPlugin);
                                 }
                             }
-                            catch { continue; }
                         }
+                        catch { continue; }
                     }
                 }
-                var _package = package;
-                foreach (var _plugin in _plugins) { _package = _plugin.Update(setting, _package); }
-                return _package;
             }
-            finally
-            {
-                _plugins.Reverse();
-                foreach (var _plugin in _plugins) { _plugin.Dispose(); }
-            }
+            foreach (var _plugin in _plugins) { package = _plugin.Update(setting, package); }
+            _plugins.Reverse();
+            return _plugins;
         }
 
         static private string Specification(string project)
@@ -207,12 +199,13 @@ namespace NuCreate
                     if (_extension) { throw new NotSupportedException(); }
                     var _targets = string.Concat(assembly.Substring(0, assembly.Length - 4), ".targets");
                     _builder.PopulateFiles(null, Program.Bin(_directory).Select(_Filename => new ManifestFile() { Source = _Filename, Target = "build" }));
-                    var _package = Program.Extends(_dependencies, _setting, _builder);
+                    var _plugins = Program.Extends(_dependencies, _setting, ref _builder);
                     Program.Try(() => { if (File.Exists(_targets)) { File.Delete(_targets); } });
-                    using (var _stream = typeof(Program).Assembly.GetManifestResourceStream("NuPack.Template")) { File.WriteAllText(_targets, new StreamReader(_stream).ReadToEnd().Replace("[name]", _name).Replace("[version]", _package.Version.ToOriginalString()), Encoding.UTF8); }
-                    var _filename = Program.Save(_directory, _package);
+                    using (var _stream = typeof(Program).Assembly.GetManifestResourceStream("NuPack.Template")) { File.WriteAllText(_targets, new StreamReader(_stream).ReadToEnd().Replace("[name]", _name).Replace("[version]", _builder.Version.ToOriginalString()), Encoding.UTF8); }
+                    var _filename = Program.Save(_directory, _builder);
                     Program.Try(() => { if (File.Exists(_targets)) { File.Delete(_targets); } });
                     Console.WriteLine($"{ _name } -> { _filename }");
+                    foreach (var _plugin in _plugins) { _plugin.Dispose(); }
                 }
                 else
                 {
@@ -220,7 +213,9 @@ namespace NuCreate
                     {
                         _builder.Files.AddRange(Program.Template().GetContentFiles());
                         _builder.PopulateFiles(null, Program.Bin(_directory, "Microsoft.Web.XmlTransform.dll", "NuGet.Core.dll", "NuPack.Extension.dll", "NuPack.Extension.xml").Select(_Filename => new ManifestFile() { Source = _Filename, Target = $"NuPack" }));
-                        Console.WriteLine($"{ _name } -> { Program.Save(_directory, Program.Extends(_dependencies, _setting, _builder)) }");
+                        var _plugins = Program.Extends(_dependencies, _setting, ref _builder);
+                        Console.WriteLine($"{ _name } -> { Program.Save(_directory, _builder) }");
+                        foreach (var _plugin in _plugins) { _plugin.Dispose(); }
                     }
                     else
                     {
@@ -254,9 +249,11 @@ namespace NuCreate
                         var _framework = $"lib/net{ _assembly.MainModule.RuntimeVersion[1] }{ _assembly.MainModule.RuntimeVersion[3] }/";
                         var _resources = _dictionary.Select(_Resource => Path.GetFileName(_Resource)).Concat(Program.Resources(project, configuration, false)).Select(_Resource => _Resource.ToLower()).Distinct().ToArray();
                         _builder.PopulateFiles(null, Program.Bin(_directory, Path.GetFileName(_targets)).Where(_Resource => !_resources.Contains(Path.GetFileName(_Resource).ToLower())).Select(_Resource => new ManifestFile() { Source = _Resource, Target = _framework }));
-                        var _filename = Program.Save(_directory, Program.Extends(_dependencies, _setting, _builder));
+                        var _plugins = Program.Extends(_dependencies, _setting, ref _builder);
+                        var _filename = Program.Save(_directory, _builder);
                         Program.Try(() => { if (File.Exists(_targets)) { File.Delete(_targets); } });
                         Console.WriteLine($"{ _name } -> { _filename }");
+                        foreach (var _plugin in _plugins) { _plugin.Dispose(); }
                     }
                 }
             }
@@ -266,7 +263,9 @@ namespace NuCreate
                 var _manifest = Program.Open(_specification);
                 _builder.Populate(_manifest.Metadata);
                 _builder.PopulateFiles(null, _manifest.Files);
-                Console.WriteLine($"{ _name } -> { Program.Save(_directory, Program.Extends(_dependencies, _setting, _builder)) }");
+                var _plugins = Program.Extends(_dependencies, _setting, ref _builder);
+                Console.WriteLine($"{ _name } -> { Program.Save(_directory, _builder) }");
+                foreach (var _plugin in _plugins) { _plugin.Dispose(); }
             }
         }
     }
