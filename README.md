@@ -31,7 +31,7 @@ Nuget process does not propagate xml documentation and resources of dependency i
 
 NuPack can provide a library to develop a plugin as nuget package. It will detect plugin from package.config and load it from NuPack folder to add additional behavior to NuPack. Plugin will be called with arguments passed to NuPack and produce a PackageBuilder from original PackageBuilder before save result. Plugin is disposed after nuget creation.
 
-- **Detection of NuPack Extension project to handle it** -> [expected in next release](https://github.com/Virtuoze/NuPack/blob/master/NuPack/NuPack/Program.cs#L192) : 
+- **Detection of NuPack Extension project to handle it**
 
 NuPack have to create a specific package to store plugin (library) in NuPack folder when project reference NuPack.Extension.
 
