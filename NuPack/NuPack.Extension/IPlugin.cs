@@ -1,18 +1,19 @@
 ﻿using System;
+using NuGet;
 
 namespace NuPack.Extension
 {
     /// <summary>
-    /// Plugin to reorganize package.
+    /// Plugin to reorganize package builder
     /// </summary>
-    public interface IPlugin
+    public interface IPlugin : IDisposable
     {
         /// <summary>
-        /// Produce a new package based on original.
+        /// Produce a new package builder based on original.
         /// </summary>
         /// <param name="setting">Setting used to produce package</param>
-        /// <param name="package">Package definition</param>
+        /// <param name="package">Package builder</param>
         /// <returns></returns>
-        Package Update(Setting setting, Package package);
+        PackageBuilder Update(Setting setting, PackageBuilder package);
     }
 }

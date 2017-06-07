@@ -94,42 +94,47 @@ namespace NuCreate
             }
         }
 
-        static private Package Extends(IEnumerable<PackageReference> dependencies, Setting setting, Package package)
+        static private PackageBuilder Extends(IEnumerable<PackageReference> dependencies, Setting setting, PackageBuilder package)
         {
-            var _package = package;
-            var _solution = Path.GetDirectoryName(setting.Solution);
-            foreach (var _dependency in dependencies)
+            var _plugins = new List<IPlugin>();
+            try
             {
-                var _directory = string.Concat(_solution, @"\packages\", _dependency.Id, ".", _dependency.Version, @"\build");
-                if (Directory.Exists(_directory))
+                var _solution = Path.GetDirectoryName(setting.Solution);
+                foreach (var _dependency in dependencies)
                 {
-                    foreach (var _library in Directory.EnumerateFiles(_directory, "*.dll"))
+                    var _directory = string.Concat(_solution, @"\packages\", _dependency.Id, ".", _dependency.Version, @"\NuPack");
+                    if (Directory.Exists(_directory))
                     {
-                        var _name = Path.GetFileName(_library);
-                        if (_name == "Microsoft.Web.XmlTransform.dll") { continue; }
-                        if (_name == "NuGet.Core.dll") { continue; }
-                        if (_name == "NuPack.Extension.dll") { continue; }
-                        try
+                        foreach (var _library in Directory.EnumerateFiles(_directory, "*.dll"))
                         {
-                            var _assembly = Assembly.LoadFrom(_library);
-                            var _identity = BitConverter.ToString(_assembly.GetName().GetPublicKeyToken()).Replace("-", string.Empty);
-                            if (string.Equals(_identity, Program.m_Native, StringComparison.InvariantCultureIgnoreCase)) { continue; }
-                            foreach (var _type in _assembly.GetTypes())
+                            try
                             {
-                                if (!_type.IsAbstract && typeof(IPlugin).IsAssignableFrom(_type))
+                                var _assembly = Assembly.LoadFrom(_library);
+                                var _identity = BitConverter.ToString(_assembly.GetName().GetPublicKeyToken()).Replace("-", string.Empty);
+                                if (string.Equals(_identity, Program.m_Native, StringComparison.InvariantCultureIgnoreCase)) { continue; }
+                                foreach (var _type in _assembly.GetTypes())
                                 {
-                                    var _constructor = _type.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, null, Type.EmptyTypes, null);
-                                    if (_constructor == null) { continue; }
-                                    var _plugin = Activator.CreateInstance(_type, true) as IPlugin;
-                                    _package = _plugin.Update(setting, _package);
+                                    if (!_type.IsAbstract && typeof(IPlugin).IsAssignableFrom(_type))
+                                    {
+                                        var _constructor = _type.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, null, Type.EmptyTypes, null);
+                                        if (_constructor == null) { continue; }
+                                        _plugins.Add(Activator.CreateInstance(_type, true) as IPlugin);
+                                    }
                                 }
                             }
+                            catch { continue; }
                         }
-                        catch { continue; }
                     }
                 }
+                var _package = package;
+                foreach (var _plugin in _plugins) { _package = _plugin.Update(setting, _package); }
+                return _package;
             }
-            return _package;
+            finally
+            {
+                _plugins.Reverse();
+                foreach (var _plugin in _plugins) { _plugin.Dispose(); }
+            }
         }
 
         static private string Specification(string project)
@@ -140,17 +145,37 @@ namespace NuCreate
             return _element == null ? null : string.Concat(Path.GetDirectoryName(project), _element.Attribute("Include").Value);
         }
 
-        static private string Save(Package package)
+        static private string Save(string directory, PackageBuilder package)
         {
-            var _filename = $@"{ package.Directory }\{ package.Builder.Id }.{ package.Builder.Version }.nupkg";
+            var _filename = $@"{ directory }\{ package.Id }.{ package.Version }.nupkg";
             using (var _memory = new MemoryStream())
             {
-                package.Builder.Save(_memory);
+                package.Save(_memory);
                 _memory.Seek(0L, SeekOrigin.Begin);
                 Program.Try(() => { if (File.Exists(_filename)) { File.Delete(_filename); } });
                 using (var _stream = File.Open(_filename, FileMode.Create)) { _memory.CopyTo(_stream); }
             }
             return _filename;
+        }
+
+        static private IEnumerable<string> Bin(string directory, params string[] exclusion)
+        {
+            foreach (var _filename in Directory.EnumerateFiles(directory))
+            {
+                var _name = Path.GetFileName(_filename);
+                if (exclusion != null && exclusion.Any(_Name => string.Equals(_Name, _name, StringComparison.CurrentCultureIgnoreCase))) { continue; }
+                if (_name.EndsWith(".vshost.exe", StringComparison.CurrentCultureIgnoreCase) || _name.EndsWith(".vshost.exe.manifest", StringComparison.CurrentCultureIgnoreCase)) { continue; }
+                if (_name.EndsWith(".nupkg", StringComparison.CurrentCultureIgnoreCase) || _name.EndsWith(".pdb", StringComparison.CurrentCultureIgnoreCase) || _name.EndsWith(".tmp", StringComparison.CurrentCultureIgnoreCase) || _name.EndsWith(".bak", StringComparison.CurrentCultureIgnoreCase)) { continue; }
+                yield return _filename;
+            }
+        }
+
+        static private ZipPackage Template()
+        {
+            using (var _stream = typeof(Program).Assembly.GetManifestResourceStream("NuPack.Template.1.0.0.nupkg"))
+            {
+                return new ZipPackage(_stream);
+            }
         }
 
         static private void Create(string solution, string project, string configuration, string plateform, string assembly)
@@ -160,11 +185,12 @@ namespace NuCreate
             var _version = _assembly.Metadata<AssemblyFileVersionAttribute>();
             var _directory = Path.GetDirectoryName(assembly);
             var _dependencies = new PackageReferenceFile(string.Concat(Path.GetDirectoryName(project), @"\packages.config")).GetPackageReferences().Where(_Package => _Package.Id != "NuPack").ToArray();
+            var _extension = _dependencies.Any(_Dependency => _Dependency.Id == "NuPack.Extension");
             var _setting = new Setting(solution, project, configuration, plateform, assembly);
             var _specification = Program.Specification(project);
             if (_specification == null)
             {
-                var _builder = new PackageBuilder();
+                var _builder = typeof(PackageBuilder).GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, null, new Type[] { typeof(bool) }, null).Invoke(new object[] { true }) as PackageBuilder;
                 var _metadata = new ManifestMetadata()
                 {
                     Id = _name,
@@ -178,32 +204,23 @@ namespace NuCreate
                 _builder.Populate(_metadata);
                 if (assembly.EndsWith(".exe", StringComparison.CurrentCultureIgnoreCase))
                 {
+                    if (_extension) { throw new NotSupportedException(); }
                     var _targets = string.Concat(assembly.Substring(0, assembly.Length - 4), ".targets");
-                    _builder.PopulateFiles(null, Directory.EnumerateFiles(_directory).Where(_Filename => !_Filename.EndsWith(".nupkg", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".vshost.exe", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".vshost.exe.manifest", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".pdb", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".tmp", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".bak", StringComparison.CurrentCultureIgnoreCase)).Select(_Filename => new ManifestFile() { Source = _Filename, Target = $"build" }));
-                    var _package = Program.Extends(_dependencies, _setting, new Package(_directory, _builder));
+                    _builder.PopulateFiles(null, Program.Bin(_directory).Select(_Filename => new ManifestFile() { Source = _Filename, Target = "build" }));
+                    var _package = Program.Extends(_dependencies, _setting, _builder);
                     Program.Try(() => { if (File.Exists(_targets)) { File.Delete(_targets); } });
-                    using (var _stream = typeof(Program).Assembly.GetManifestResourceStream("NuPack.Template")) { File.WriteAllText(_targets, new StreamReader(_stream).ReadToEnd().Replace("[name]", _name).Replace("[version]", _package.Builder.Version.ToOriginalString()), Encoding.UTF8); }
-                    var _filename = Program.Save(_package);
+                    using (var _stream = typeof(Program).Assembly.GetManifestResourceStream("NuPack.Template")) { File.WriteAllText(_targets, new StreamReader(_stream).ReadToEnd().Replace("[name]", _name).Replace("[version]", _package.Version.ToOriginalString()), Encoding.UTF8); }
+                    var _filename = Program.Save(_directory, _package);
                     Program.Try(() => { if (File.Exists(_targets)) { File.Delete(_targets); } });
                     Console.WriteLine($"{ _name } -> { _filename }");
                 }
                 else
                 {
-                    if (_dependencies.Any(_Dependency => _Dependency.Id == "NuPack.Extension"))
+                    if (_extension)
                     {
-                        var _targets = string.Concat(assembly.Substring(0, assembly.Length - 4), ".targets");
-                        _builder.PopulateFiles(null, Directory.EnumerateFiles(_directory).Where(_Filename => !_Filename.EndsWith(".nupkg", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".vshost.exe", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".vshost.exe.manifest", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".pdb", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".tmp", StringComparison.CurrentCultureIgnoreCase) && !_Filename.EndsWith(".bak", StringComparison.CurrentCultureIgnoreCase)).Select(_Filename => new ManifestFile() { Source = _Filename, Target = $"build" }));
-                        using (var _stream = typeof(Program).Assembly.GetManifestResourceStream("NuPack.Template"))
-                        {
-                            var _document = XDocument.Parse(new StreamReader(_stream).ReadToEnd().Replace("[name]", _name), LoadOptions.PreserveWhitespace);
-                            _document.Descendants(_document.Root.Name.Namespace.GetName("Target")).Single().RemoveNodes();
-                            Program.Try(() => { if (File.Exists(_targets)) { File.Delete(_targets); } });
-                            File.WriteAllText(_targets, _document.ToString(), Encoding.UTF8);
-                        }
-                        _builder.PopulateFiles(null, new ManifestFile[] { new ManifestFile() { Source = _targets, Target = $"build" } });
-                        var _filename = Program.Save(Program.Extends(_dependencies, _setting, new Package(_directory, _builder)));
-                        Program.Try(() => { if (File.Exists(_targets)) { File.Delete(_targets); } });
-                        Console.WriteLine($"{ _name } -> { _filename }");
+                        _builder.Files.AddRange(Program.Template().GetContentFiles());
+                        _builder.PopulateFiles(null, Program.Bin(_directory, "Microsoft.Web.XmlTransform.dll", "NuGet.Core.dll", "NuPack.Extension.dll", "NuPack.Extension.xml").Select(_Filename => new ManifestFile() { Source = _Filename, Target = $"NuPack" }));
+                        Console.WriteLine($"{ _name } -> { Program.Save(_directory, Program.Extends(_dependencies, _setting, _builder)) }");
                     }
                     else
                     {
@@ -236,8 +253,8 @@ namespace NuCreate
                         }
                         var _framework = $"lib/net{ _assembly.MainModule.RuntimeVersion[1] }{ _assembly.MainModule.RuntimeVersion[3] }/";
                         var _resources = _dictionary.Select(_Resource => Path.GetFileName(_Resource)).Concat(Program.Resources(project, configuration, false)).Select(_Resource => _Resource.ToLower()).Distinct().ToArray();
-                        _builder.PopulateFiles(null, Directory.EnumerateFiles(_directory).Where(_Resource => !string.Equals(_Resource, _targets, StringComparison.CurrentCultureIgnoreCase) && !_Resource.EndsWith(".pdb", StringComparison.CurrentCultureIgnoreCase) && !_Resource.EndsWith(".tmp", StringComparison.CurrentCultureIgnoreCase) && !_Resource.EndsWith(".bak", StringComparison.CurrentCultureIgnoreCase) && !_resources.Contains(Path.GetFileName(_Resource).ToLower())).Select(_Resource => new ManifestFile() { Source = _Resource, Target = _framework }));
-                        var _filename = Program.Save(Program.Extends(_dependencies, _setting, new Package(_directory, _builder)));
+                        _builder.PopulateFiles(null, Program.Bin(_directory, Path.GetFileName(_targets)).Where(_Resource => !_resources.Contains(Path.GetFileName(_Resource).ToLower())).Select(_Resource => new ManifestFile() { Source = _Resource, Target = _framework }));
+                        var _filename = Program.Save(_directory, Program.Extends(_dependencies, _setting, _builder));
                         Program.Try(() => { if (File.Exists(_targets)) { File.Delete(_targets); } });
                         Console.WriteLine($"{ _name } -> { _filename }");
                     }
@@ -249,7 +266,7 @@ namespace NuCreate
                 var _manifest = Program.Open(_specification);
                 _builder.Populate(_manifest.Metadata);
                 _builder.PopulateFiles(null, _manifest.Files);
-                Console.WriteLine($"{ _name } -> { Program.Save(Program.Extends(_dependencies, _setting, new Package(_directory, _builder))) }");
+                Console.WriteLine($"{ _name } -> { Program.Save(_directory, Program.Extends(_dependencies, _setting, _builder)) }");
             }
         }
     }
