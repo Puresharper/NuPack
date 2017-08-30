@@ -134,7 +134,7 @@ namespace NuCreate
             var _document = XDocument.Load(project);
             var _namespace = _document.Root.Name.Namespace;
             var _element = _document.Descendants(_namespace.GetName("None")).SingleOrDefault(_Element => _Element.Attribute("Include") != null && _Element.Attribute("Include").Value.EndsWith(".nuspec", StringComparison.CurrentCultureIgnoreCase));
-            return _element == null ? null : string.Concat(Path.GetDirectoryName(project), _element.Attribute("Include").Value);
+            return _element == null ? null : Path.Combine(Path.GetDirectoryName(project), _element.Attribute("Include").Value);
         }
 
         static private string Save(string directory, PackageBuilder package)

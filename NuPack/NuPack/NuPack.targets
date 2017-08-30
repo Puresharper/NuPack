@@ -7,6 +7,6 @@
     </BuildDependsOn>
   </PropertyGroup>
   <Target Name="NuPack">
-    <Exec Command="&quot;$(SolutionDir)packages\NuPack.3.4.2\build\NuPack.exe&quot; &quot;$(SolutionPath)&quot; &quot;$(ProjectPath)&quot; &quot;$(Configuration)&quot; &quot;$(PlatformName)&quot; &quot;$(TargetPath)&quot;" />
+    <Exec Command="&quot;$(SolutionDir)packages\NuPack.3.4.4\build\NuPack.exe&quot; &quot;$(SolutionPath)&quot; &quot;$(ProjectPath)&quot; &quot;$(Configuration)&quot; &quot;$(PlatformName)&quot; &quot;$(TargetPath)&quot;" />
   </Target>
 </Project>
