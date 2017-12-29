@@ -78,7 +78,6 @@
     <None Include="NuPack.targets">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <EmbeddedResource Include="Template.1.0.0.nupkg" />
     <None Include="packages.config" />
     <EmbeddedResource Include="Template" />
   </ItemGroup>
