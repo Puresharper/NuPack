@@ -134,8 +134,18 @@ namespace NuCreate
             var _document = XDocument.Load(project);
             var _namespace = _document.Root.Name.Namespace;
             var _element = _document.Descendants(_namespace.GetName("None")).SingleOrDefault(_Element => _Element.Attribute("Include") != null && _Element.Attribute("Include").Value.EndsWith(".nuspec", StringComparison.CurrentCultureIgnoreCase));
-            return _element == null ? null : Path.Combine(Path.GetDirectoryName(project), _element.Attribute("Include").Value);
+
+            // Path.Combine is essentially useless
+            // see http://thingsihateaboutmicrosoft.blogspot.com/2009/08/pathcombine-is-essentially-useless.html
+            string _Path2 = _element.Attribute("Include").Value;
+            if (Path.IsPathRooted(_Path2))
+            {
+                _Path2 = _Path2.TrimStart(Path.DirectorySeparatorChar);
+                _Path2 = _Path2.TrimStart(Path.AltDirectorySeparatorChar);
+            }
+            return _element == null ? null : Path.Combine(Path.GetDirectoryName(project), _Path2);
         }
+
 
         static private string Save(string directory, PackageBuilder package)
         {
