@@ -182,10 +182,13 @@ namespace NuCreate
 
         static private void Create(string solution, string project, string configuration, string plateform, string assembly)
         {
+            var _directory = Path.GetDirectoryName(assembly);
+            var resolver = new DefaultAssemblyResolver();
+            resolver.AddSearchDirectory(_directory, new ReaderParameters { AssemblyResolver = resolver });
+
             var _assembly = AssemblyDefinition.ReadAssembly(assembly);
             var _name = _assembly.Name.Name; 
             var _version = _assembly.Metadata<AssemblyFileVersionAttribute>();
-            var _directory = Path.GetDirectoryName(assembly);
             var _dependencies = new PackageReferenceFile(string.Concat(Path.GetDirectoryName(project), @"\packages.config")).GetPackageReferences().Where(_Package => _Package.Id != "NuPack").ToArray();
             var _extension = _dependencies.Any(_Dependency => _Dependency.Id == "NuPack.Extension");
             var _setting = new Setting(solution, project, configuration, plateform, assembly);
